@@ -1,0 +1,71 @@
+plugins {
+    id 'java'
+}
+group = 'vn.lapro'
+version = '1.0-SNAPSHOT'
+sourceCompatibility = '1.4'
+targetCompatibility = '1.4'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: "*.jar")
+}
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
+def classPath() {
+    StringBuilder sb = new StringBuilder()
+    fileTree(dir: "libs", include: "*.jar").each { file ->
+        sb.append(file.absolutePath).append(File.pathSeparator)
+    }
+    return sb.toString()
+}
+
+
+tasks.register('preverify', Exec) {
+    dependsOn compileJava
+
+    def inputDir = file("${buildDir}/classes/java/main")
+    def outputDir = file("${buildDir}/preverified")
+    def preverifyExe = file("C:\\WTK2.5.2_01\\bin\\preverify.exe")
+    outputs.dir outputDir
+    doFirst {
+        outputDir.mkdirs()
+    }
+    commandLine 'cmd', '/k', preverifyExe.absolutePath, '-classpath', classPath(), '-d', outputDir, inputDir
+}
+tasks.register('toJar', Jar) {
+    dependsOn preverify
+//    exclude "${buildDir}/classes/**"
+    from("${buildDir}/preverified") {
+        include "**/*.class"
+    }
+    from(sourceSets.main.resources) {
+        include "**/*"
+    }
+    manifest {
+        from('src/main/resources/META-INF/MANIFEST.MF')
+    }
+    archiveBaseName = 'HelloWorld'
+    archiveVersion = '1.0'
+}
+
+tasks.register('run', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'HelloWorld'
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:-options'
+}

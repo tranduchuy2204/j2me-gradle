@@ -1,0 +1,6 @@
+MIDlet-Name: HelloWorld
+MIDlet-Version: 1.0
+MIDlet-Vendor: Example
+MIDlet-1: HelloWorld, ,HelloWorld
+MicroEdition-Profile: MIDP-2.0
+MicroEdition-Configuration: CLDC-1.1
